@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrom=1">
+	<title>散列画廊特效</title>
+	<style>
+	/*css 初始化 */
+	html, body, ul, li, ol, dl, dd, dt, hr, blockquote, p, h1, h2, h3, h4, h5, h6, form, fieldset, legend, img, textarea, th, td{
+	    margin: 0;
+	    padding: 0;
+	}
+	
+	fieldset, img, input, button {
+	    border: none;
+	    padding: 0;
+	    margin: 0;
+	    outline-style: none;
+	}
+	
+	ul, ol {
+	    list-style: none;
+	}
+	
+	input {
+	    padding-top: 0;
+	    padding-bottom: 0;
+	}
+	
+	select, input {
+	    vertical-align: middle;
+	}
+	
+	select, input, textarea {
+	    margin: 0;
+	}
+	textarea {
+	    resize: none;
+	}
+	
+	/*防止拖动*/
+	img {
+	    border: 0;
+	    vertical-align: middle;
+	}
+	
+	/*  去掉图片低测默认的3像素空白缝隙*/
+	table {
+	    border-collapse: collapse;
+	    border-spacing: 0;
+	}
+	
+	body {
+	    font: 12px/150% "微软雅黑",Arial, Verdana, "\5b8b\4f53";
+	    color: #666;
+	    background: #fff
+	}
+	
+	.clearfix:before, .clearfix:after {
+	    content: "";
+	    display: table;
+	}
+	
+	.clearfix:after {
+	    clear: both;
+	}
+	
+	.clearfix {
+	    *zoom: 1; /*IE/7/6*/
+	}
+	
+	a {
+	    text-decoration: none;
+	}
+
+	/*海报样式*/
+	.wrap{
+		margin:100px auto;
+		width: 1000px;
+		height: 600px;
+		background-color: #333;
+		position: relative;
+		overflow: hidden;
+		perspective:800px; 
+	}
+	.wrap .photo{
+		width: 144px;
+		height: 200px;
+		position: absolute;
+		top: 50%;
+		left:50%;
+		margin-top: -100px;
+		margin-left: -72px;
+
+        transition: all .6s;
+		-webkit-transition: all .6s;
+		-moz-transition: all .6s;
+	}
+	/*图片居中的样式*/
+	.wrap .photo-center{
+		width: 216px;
+		height: 300px;
+        top: 50%;
+		left:50%;
+		margin-top: -150px;
+		margin-left: -108px;
+        z-index: 1000;
+
+	}
+	.wrap .photo .photo-wrap{
+		width: 100%;
+		height: 100%;
+		background-color: white;
+		box-shadow: 0 0 2px #ccc;
+
+		transform-style:preserve-3d;
+		-webkit-transform-style:preserve-3d;
+		-moz-transform-style:preserve-3d;
+        
+        transition: all .6s;
+		-webkit-transition: all .6s;
+		-moz-transition: all .6s;
+
+		transform-origin:45px 50%;
+		-webkit-transform-origin:54px 50%;
+		-moz-transform-origin:54px 50%;
+	}
+	.wrap .photo .photo-wrap .side{
+		width: 100%;
+		height: 100%;
+		padding: 10px 10px 0px 10px;
+		position: absolute;
+		top: 0;
+		left: 0;
+
+		box-sizing: border-box;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+
+		backface-visibility: hidden;
+		-webkit-backface-visibility: hidden;
+		-moz-backface-visibility: hidden;
+
+		font-smoothing:antialiased;
+		-webkit-font-smoothing:antialiased;
+		-moz-font-smoothing:antialiased;
+	}
+	.wrap .photo .photo-wrap .side-front p img{
+		width: 100%;
+	}
+	.wrap .photo .photo-wrap .side-front p:last-child{
+		height: 27px;
+		line-height: 27px;
+		text-align: center;
+		font-size: 13px;
+		color: #333;
+	}
+	.wrap .photo-center .photo-wrap .side-front p:last-child{
+		height: 30px;
+		line-height: 30px;
+		text-align: center;
+		font-size: 15px;
+	}
+	.wrap .photo .photo-wrap .side-back p{
+		text-indent:2em;
+		font-size: 13px;
+
+		/*webkit内核的多行省略css样式*/
+		overflow: hidden;
+/*	    text-overflow: ellipsis;
+	    display: -webkit-box;
+
+	    line-clamp:12;
+	    -webkit-line-clamp:12;
+	    -moz-line-clamp:12;
+
+	    box-orient:vertical;
+	    -webkit-box-orient:vertical;
+	    -moz-box-orient:vertical;*/
+	}
+	.wrap .photo-center .photo-wrap .side-back p{
+		font-size: 15px;
+	}
+	.wrap .photo .photo-wrap .side-front{
+        transform: rotateY(0deg);
+        -webkit-transform: rotateY(0deg);
+        -moz-transform: rotateY(0deg);
+	}
+	.wrap .photo .photo-wrap .side-back{
+		transform: rotateY(180deg);
+		-webkit-transform: rotateY(180deg);
+		-moz-transform: rotateY(180deg);
+	}
+
+    /*翻转样式*/
+	.wrap .photo .photo-front{
+		transform: translate(0px,0px) rotateY(0deg);
+		-webkit-transform: translate(0px,0px) rotateY(0deg);
+		-moz-transform: translate(0px,0px) rotateY(0deg);
+	}
+	.wrap .photo .photo-back{
+		transform: translate(108px,0px) rotateY(180deg);
+		-webkit-transform: translate(108px,0px) rotateY(180deg);
+		-moz-transform: translate(108px,0px) rotateY(180deg);
+	}
+
+	/*控制的点样式*/
+	.wrap .wrap-control{
+		width: auto;
+		height: 30px;
+		position: absolute;
+        bottom:50px;
+		left: 0;
+		right: 0;
+		margin: auto;
+		z-index: 10000;
+		text-align: center;
+		line-height: 30px;
+
+		perspective:800px; 
+		-webkit-0perspective:800px; 
+		-moz-perspective:800px;
+	}
+	.wrap .wrap-control li{
+		width: 30px;
+		height: 30px;
+		display: inline-block;
+		margin:0 2px;
+	    border-radius: 50%;
+	    cursor: pointer;
+	    position: relative;
+	    background-color: #d8d1d1;
+
+	    transform: scale(0.666666,0.666666);
+	    -webkit-transform: scale(0.666666,0.666666);
+	    -moz-transform: scale(0.666666,0.666666);
+
+	    transform-style:preserve-3d;
+		-webkit-transform-style:preserve-3d;
+		-moz-transform-style:preserve-3d;
+
+		transition: all .6s;
+		-webkit-transition: all .6s;
+		-moz-transition: all .6s;
+
+	}
+	.wrap .wrap-control li.front{
+		transform: rotateY(0deg) scale(1,1);
+		-webkit-transform: rotateY(0deg) scale(1,1);
+		-moz-transform: rotateY(0deg) scale(1,1);
+		background-color: transparent;
+	}
+	.wrap .wrap-control li.front .iconfont{
+        color: #141515;
+	}
+	.wrap .wrap-control li.back{
+		transform: rotateY(180deg) scale(1,1);
+		-webkit-transform: rotateY(180deg) scale(1,1);
+		-moz-transform: rotateY(180deg) scale(1,1);
+		background-color: transparent;
+	}
+	.wrap .wrap-control li.back .iconfont{
+        color: #141515;
+	}
+	.wrap .wrap-control li span{
+		width: 100%;
+		height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 50%;
+        cursor: pointer;
+	}
+
+	.wrap .wrap-control li span:first-child{
+		background-color: #d8d1d1;
+ 		transform: rotateY(180deg);
+        -webkit-transform: rotateY(180deg);
+        -moz-transform: rotateY(180deg);
+	}
+	.wrap .wrap-control li span:last-child{
+ 		background-color: #7f7a7a;
+ 		transform: rotateY(180deg);
+        -webkit-transform: rotateY(180deg);
+        -moz-transform: rotateY(180deg);
+
+        backface-visibility: hidden;
+		-webkit-backface-visibility: hidden;
+		-moz-backface-visibility: hidden;
+	}
+
+	/*web字体图标*/
+	@font-face {
+		font-family: 'iconfont';
+		src: url('font/iconfont.eot');
+		src: url('font/iconfont.eot?#iefix') format('embedded-opentype'),
+		url('font/iconfont.woff') format('woff'),
+		url('font/iconfont.ttf') format('truetype'),
+		url('font/iconfont.svg#iconfont') format('svg');
+	}
+	.iconfont{
+	    font-family:"iconfont" !important;
+	    font-size:16px;font-style:normal;
+	    color: #d8d1d1;
+	    -webkit-font-smoothing: antialiased;
+	    -webkit-text-stroke-width: 0.2px;
+	    -moz-osx-font-smoothing: grayscale;
+	}
+
+	</style>
+</head>
+<body>
+<div class="wrap" id="wrap" onselectstart = "return false">
+<ol class="wrap-control clearfix" id="wrap-control"></ol>
+</div>
+<!-- 主要模块 -->
+<script id = "arttemplate" type="text/html">
+{{each}}
+	<div class="photo">
+		<div class="photo-wrap photo-front" onclick="turn(this)">
+			<div class="side side-front">
+				<p><img src="{{$value.imgurl}}" alt=""></p>
+				<p>{{$value.title}}</p>
+			</div>
+		    <div class="side side-back">
+		        <p class = "side_content">{{$value.content}}</p>
+		    </div>
+		</div>
+	</div>
+{{/each}}
+</script>	
+
+<script src="js/data.js"></script>
+<script src="js/template.js"></script>
+<script>
+	console.log(data)
+    // 通用函数
+    function $(str){
+      var return_value;
+      str.substr(0,1) == '.' ? return_value = document.getElementsByClassName(str.substr(1)):return_value = document.getElementById(str.substr(1));
+      return return_value ;
+    }
+
+    //随机数通用函数
+	//传入范围 [min,max];
+    function random(arr){
+	    var max = Math.max.apply(null,arr);
+	    var min = Math.min.apply(null,arr)
+	    var diff = max-min;
+	    var randnum = Math.ceil(Math.random()*diff+min);
+	    return randnum;
+    }
+
+    // 通用模板渲染
+    var html = template('arttemplate', data);
+	//拼接完成的html字符串 放入父盒子中
+	$('#wrap').innerHTML += html;
+
+	var html_proint = "";
+	for (var i = 0; i < data.length; i++) {
+		html_proint += '<li onclick = "turn_point(this)">';
+			html_proint += '<span><i class="iconfont">&#xe632;</i></span>';
+			html_proint += '<span><i class="iconfont">&#xe632;</i></span>';
+		html_proint += '</li>';	                
+	};
+	$('#wrap-control').innerHTML += html_proint;
+
+    // 给控制点和主要模块添加标记点
+    add_hash();
+    function add_hash(){
+    	var lis_point = $("#wrap-control").children;
+    	for (var i = 0; i < lis_point.length; i++) {
+    		lis_point[i].setAttribute("data-hash",i)
+    	};
+    	var lis_image = $(".photo");
+    	for (var i = 0; i < lis_image.length; i++) {
+    		lis_image[i].setAttribute("data-hash",i)
+    	};
+    }
+
+	//排序当前海报
+	rsort(random([0,data.length-1]));
+	function rsort(n){
+         var photos = $(".photo");
+         var photos_wrap = $(".photo-wrap")
+         var _photos = [];
+
+         for( var i = 0; i < photos.length ;i++){
+         	if(/photo-center/.test(photos[i].className)){
+
+         		photos[i].className = photos[i].className.replace(/photo-center/,"");
+         	}
+         	if(/photo-back/.test(photos_wrap[i].className)){
+
+         		photos_wrap[i].className = photos_wrap[i].className.replace(/photo-back/,"photo-front");
+         	}
+         	_photos.push(photos[i]);
+         }
+
+         photos[n].className = "photo photo-center";
+         photos[n].style.top = "50%";
+     	 photos[n].style.left = "50%";
+     	 photos[n].style.transform = "rotate(360deg)";
+         var lis = $("#wrap-control").children;
+         for (var i = 0; i < lis.length; i++) {
+         	lis[i].className = "";
+         };
+         lis[n].className = "front";
+
+         _photos.splice(n,1);
+
+         //获得需要的长和高
+         var photo_width = $(".photo")[0].clientWidth;
+         var photo_height = $(".photo")[0].clientHeight;
+         var wrap_width = $("#wrap").clientWidth;
+         var wrap_height = $("#wrap").clientHeight;
+
+         //得到随机范围的坐标
+         var location_left = {x:[-photo_width*0.5,(wrap_width-photo_width)/2],y:[-photo_height*0.3,wrap_height]};
+
+         var location_right = {x:[(wrap_width-photo_width)/2,wrap_width],y:[-photo_height*0.3,wrap_height]};
+         
+         //分为左右区域
+         var _photo_left = _photos.splice(0,Math.ceil(_photos.length/2));
+         var _photo_right = _photos;
+
+         //随机分配左右区域的样式
+         for( key in _photo_left ){
+         	_photo_left[key].style.left = random(location_left.x)+"px";
+         	_photo_left[key].style.top = random(location_left.y)+"px";
+         	_photo_left[key].style["transform"] = _photo_left[key].style["-webkit-transform"] = "rotate("+random([-150,150])+"deg)";
+         }
+
+         for( key in _photo_right ){
+         	_photo_right[key].style.left = random(location_right.x)+"px";
+         	_photo_right[key].style.top = random(location_right.y)+"px";
+         	_photo_right[key].style["transform"] = _photo_right[key].style["-webkit-transform"] = "rotate("+random([-150,150])+"deg)";
+         }
+
+	}
+
+
+	// 翻转控制函数
+	function turn (ele) {
+         var num = ele.parentNode.getAttribute("data-hash");
+	     //如果是居中的图片 改变控制点样式
+	     if(/photo-center/.test(ele.parentNode.className)){
+            var lis = $("#wrap-control").children;
+            turn_point(lis[num]);
+
+	     }else{
+	     //不是居中的图片点击居中
+	        rsort(num);
+	     }
+
+	}
+	//翻转模块
+	function turn_img(ele){
+          var class_name = ele.className;
+		     //针对于翻转图片
+		     if(/photo-front/.test(class_name)){
+			     class_name = class_name.replace(/photo-front/,'photo-back');
+		     }else{
+	             class_name = class_name.replace(/photo-back/,'photo-front');
+		     }
+		     ele.className = class_name;
+	}
+    
+    //控制点翻转函数
+	function turn_point(ele){
+         
+         var class_name = ele.className;
+	     var lis = $("#wrap-control").children;
+	     var photos_wrap = $(".photo-wrap");
+         if(class_name ==""){
+         	 //点击的li为空
+             // 初始化控制点样式
+	         for (var i = 0; i < lis.length; i++) {
+		     	lis[i].className = "";
+		     };
+
+		     class_name = "front";
+
+		     rsort(ele.getAttribute("data-hash"));
+
+         }else{
+         	 if(class_name == "front"){
+	     	 class_name = "back";
+		     }
+		     else if(class_name == "back"){
+	             class_name = "front";
+		     }
+		     
+		     turn_img(photos_wrap[ele.getAttribute("data-hash")]);
+         }
+        
+	     ele.className = class_name;
+	}
+
+	//多行省略  css的方法只适用于webkit内核的浏览器
+	reduce_row();
+	function reduce_row(){
+		var side_contents = $(".side_content");
+		for (var i = 0; i < side_contents.length; i++) {
+			var str = side_contents[i].innerHTML;
+			if(str.length > 14*12){
+				str = str.substr(0,14*12-6)+"...";
+			}
+			side_contents[i].innerHTML = str;
+		};
+	}
+</script>
+</body>
+</html>
